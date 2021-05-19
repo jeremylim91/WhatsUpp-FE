@@ -13,6 +13,7 @@ export default {
       sampleChats: [
         { name: "Joel", avatar: ":)", latestMsg: "sup bro" },
         { name: "Justin", avatar: ":)", latestMsg: "Eh wanna go lunch?" }
+        //
       ]
     };
   }
