@@ -19,7 +19,7 @@ export default {
 </script>
 <style scoped>
 .sidebar-pane {
-  padding: 20px 10px 20px;
+  padding: 0px 10px 20px;
   width: 10em;
   background-color: lightblue;
   height: 100vh;
