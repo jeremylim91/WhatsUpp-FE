@@ -13,7 +13,6 @@ export default {
   }
   // methods() {
   //   function test1() {
-  //     console.log(this.searchInput);
   //   }
   // }
 };
