@@ -16,16 +16,15 @@ export default {};
   overflow: hidden;
   background-color: lightgoldenrodyellow;
   padding: 0.2em 0.2em 0.2em;
-  /* display: flex;
-  justify-content: flex-start; */
+  height: 2.5em;
+  display: flex;
 }
 img {
-  height: 2em;
+  height: 2.5em;
   vertical-align: middle;
 }
 button {
   background-color: transparent;
   border: none;
-  vertical-align: middle;
 }
 </style>
