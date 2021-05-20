@@ -1,6 +1,5 @@
 <template>
-  <div>
-    This is chat pane
+  <div class="chat-pane">
     <chat-pane__header />
     <chat-pane__chat />
     <chat-pane__text-input />
@@ -20,3 +19,13 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.chat-pane {
+  padding: 0px 10px 20px;
+  width: 100vw !important;
+  background-color: lightpink;
+  height: 100vh;
+  position: relative;
+}
+</style>
