@@ -4,6 +4,7 @@
     <chat-pane />
   </div>
 </template>
+
 <script>
 import SidebarPane from "./sidebar/SidebarPane";
 import ChatPane from "./chat/ChatPane";
