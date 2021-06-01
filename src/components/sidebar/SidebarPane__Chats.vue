@@ -3,21 +3,33 @@
     <button
       type="button"
       class="chat-summary"
-      v-for="chat in sampleChats"
-      :key="chat.name"
+      v-for="room in allRooms"
+      :key="room._id"
     >
-      <div>{{ chat.avatar }}</div>
+      <div><img :src="room.image" alt="avatar" /></div>
       <div>
-        <div class="name">{{ chat.name }}</div>
-        <div class="latestmsg">{{ chat.latestMsg }}</div>
+        <div class="name">{{ room.name }}</div>
+        <div class="latestmsg">{{ room.lastMsg }}</div>
       </div>
     </button>
   </div>
 </template>
 <script>
+import axios from "axios";
+import { getAllRooms } from "../../../store.mjs";
+
 export default {
+  mounted() {
+    axios.get("http://localhost:3004/rooms/index").then(({ data }) => {
+      console.log(data);
+      this.allRooms = [...data];
+    });
+    // const self = this.allRooms;
+    // this.allRooms = getAllRooms(this.allRooms);
+  },
   data() {
     return {
+      allRooms: "",
       sampleChats: [
         { name: "Joel", avatar: ":)", latestMsg: "sup bro" },
         { name: "Justin", avatar: ":)", latestMsg: "Eh wanna go lunch?" }
