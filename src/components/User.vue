@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import Info from "./info.vue";
+import Info from "./info";
 export default {
   data() {
     return {
