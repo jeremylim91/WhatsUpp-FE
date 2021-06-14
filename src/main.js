@@ -1,27 +1,44 @@
 import Vue from "vue";
 import App from "./App.vue";
-import User from "./components/User.vue";
-import VueRouter from "vue-router";
-import Homepage from "./components/Homepage.vue";
-import Login from "./components/Login.vue";
+import Vuex from "vuex";
+import store, { socket } from "./store.mjs";
+import router from "./router.mjs";
+// import { io } from "socket.io-client";
+import VueSocketIO from "vue-socket.io";
+import socketIO from "vue-socket.io";
 
-// Tell app to use Vue router for this single-page application
-Vue.use(VueRouter);
-
-// specify routes and associated UI component
-const routes = [
-  { path: "/login", component: Login },
-  { path: "/", component: Homepage }
-];
-// create a VueRouter Instance and use the above info to tell app to route the accordingly
-const router = new VueRouter({
-  // the value (i.e. 'routes) referse to the routes constant defined above
-  routes: routes
+const vueSocketIO = new VueSocketIO({
+  debug: true,
+  // As the connection, use the sokect instance that was created in the store
+  connection: socket,
+  vuex: { store, actionPrefix: "SOCKET_", mutationPrefix: "SOCKET_" }
 });
+// import { io } from "socket.io-client";
 
-Vue.component("app-user", User);
+// const socket = io("http://localhost:3004");
+// socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
+
+// Vue.use(
+//   new VueSocketIO({
+//     debug: true,
+//     connection: "http://localhost:3004",
+//     vuex: {
+//       store,
+//       actionPrefix: "SOCKET_",
+//       mutationPrefix: "SOCKET_"
+//     }
+//     // options: { path: "/my-app/" }
+//     //Optional options
+//   })
+// );
+// initialise a socket
+// export const socketInstance = io("http://localhost:3004");
+// Vue.use(socketIO, "http://localhost:3004");
+Vue.use(vueSocketIO, socket, store);
+
 new Vue({
   el: "#app",
-  router: router,
+  router,
+  store,
   render: h => h(App)
 });
