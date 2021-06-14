@@ -1,15 +1,30 @@
 <template>
   <div class="text-input-container">
-    <input type="text" class="input-box" v-model="textInput" />
+    <input
+      type="text"
+      class="input-box"
+      v-model="textInput"
+      @keyup.enter="emitInputToDb"
+    />
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
 export default {
   data() {
     return {
       textInput: ""
     };
+  },
+  // dispatch an action to save the user's input to the db
+  methods: {
+    emitInputToDb(event) {
+      const msgContent = event.target.value;
+      this.$store.dispatch("emitInputToDb", { msgContent });
+      // empty the input field
+      this.textInput = "";
+    }
   }
 };
 </script>
@@ -31,5 +46,6 @@ export default {
   width: 90%;
   border-radius: 50px;
   padding: 0px 0.5em 0px;
+  outline: none;
 }
 </style>
