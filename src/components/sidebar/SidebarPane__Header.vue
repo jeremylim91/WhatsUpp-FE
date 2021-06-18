@@ -1,22 +1,96 @@
 <template>
   <div class="sidebar-header">
-    <button type="button"><img src="../../assets/profilePic.png" /></button>
-    <button type="button"><img src="../../assets/addContact.png" /></button>
-    <button type="button"><img src="../../assets/messageAdd.png" /></button>
+    <DropdownBox @isDropdownBoxVisible="isDropdownBoxVisible">
+      <template v-slot:toggler>
+        <img src="../../assets/profilePic.png" />
+      </template>
+    </DropdownBox>
+    <!-- <button type="button">
+      <img src="../../assets/profilePic.png" />
+    </button> -->
+    <!-- <button type="button"><img src="../../assets/addContact.png" /></button> -->
+    <!-- <button type="button" class="btn" @click="showModal">
+      <img src="../../assets/messageAdd.png" />
+    </button> -->
+    <DropdownBox @isDropdownBoxVisible="isDropdownBoxVisible">
+      <template v-slot:toggler>
+        <button type="button"><img src="../../assets/addContact.png" /></button>
+      </template>
+    </DropdownBox>
+    <DropdownBox @isDropdownBoxVisible="isDropdownBoxVisible">
+      <template v-slot:toggler>
+        <img src="../../assets/messageAdd.png" />
+      </template>
+    </DropdownBox>
+    <Modal
+      v-show="isModalVisible"
+      @close="closeModal"
+      @handleSubmit="createRoom({ roomName: textInput })"
+    >
+      <template v-slot:header>
+        Create a new room
+      </template>
+      <template v-slot:body>
+        <form>
+          <label for="fRoomName">Room name</label>
+          <input
+            id="fRoomName"
+            type="text"
+            placeholder="Name of new room"
+            v-model="textInput"
+          />
+        </form>
+      </template>
+      <template v-slot:footer> &nbsp</template>
+    </Modal>
   </div>
 </template>
 <script>
-export default {};
+import { mapActions } from "vuex";
+import Modal from "../HOCs/Modal.vue";
+import DropdownBox from "../HOCs/DropdownBox.vue";
+
+export default {
+  components: {
+    Modal,
+    DropdownBox
+  },
+  data() {
+    return {
+      isDropdownBoxVisible: false,
+      isModalVisible: false,
+      textInput: ""
+    };
+  },
+  methods: {
+    ...mapActions(["createRoom"]),
+
+    showModal() {
+      this.isModalVisible = true;
+    },
+    closeModal() {
+      this.isModalVisible = false;
+    },
+    showDropdown() {
+      this.isModalVisible = true;
+    },
+    closeDropdown() {
+      this.isModalVisible = false;
+    }
+  }
+};
 </script>
 
 <style>
 .sidebar-header {
+  grid-area: sidebarHeader;
   border: 1px solid black;
-  margin: 0px -10px 10px;
-  overflow: hidden;
+  /* margin: 0px -10px 10px; */
+  /* overflow: hidden; */
+  /* height: 100%; */
   background-color: lightgoldenrodyellow;
   padding: 0.2em 0.2em 0.2em;
-  height: 2.5em;
+  /* height: 2.5em; */
   display: flex;
 }
 img {
@@ -26,5 +100,12 @@ img {
 button {
   background-color: transparent;
   border: none;
+}
+label {
+  display: none;
+}
+
+#fRoomName {
+  width: 100%;
 }
 </style>
