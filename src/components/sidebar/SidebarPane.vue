@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar-pane">
-    <sidebar-header />
+    <!-- <sidebar-header /> -->
     <sidebar-searchbox />
     <sidebar-chats />
   </div>
@@ -18,10 +18,12 @@ export default {
 };
 </script>
 <style scoped>
-.sidebar-pane {
+/* .sidebar-pane {
   padding: 0px 10px 20px;
   width: 10em;
+  grid-column: 1/2;
+  flex: auto;
   background-color: lightblue;
   height: 100vh;
-}
+} */
 </style>
