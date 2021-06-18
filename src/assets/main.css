@@ -1,0 +1,39 @@
+body,
+html,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  /* overflow: hidden; */
+  /* display: flex; */
+}
+* {
+  box-sizing: border-box;
+}
+
+.Homepage__container {
+  /* display: flex; */
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 0.3fr 1fr;
+  grid-template-rows: 0.1fr 1fr;
+  grid-template-areas: "sidebarHeader chatHeader" "sidebar chat";
+  background: #d7dbd5;
+  /* overflow: scroll; */
+}
+.chat-pane {
+  grid-area: chat;
+
+  display: grid;
+  grid-template-rows: 1fr 3em;
+  grid-template-columns: 1fr;
+  grid-template-areas: "chatArea" "textInputArea";
+  overflow: hidden;
+}
+
+.sidebar-pane {
+  grid: sidebar;
+  padding: 0px 10px 20px;
+  background-color: #ffffff;
+}
