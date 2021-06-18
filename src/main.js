@@ -6,6 +6,7 @@ import router from "./router.mjs";
 // import { io } from "socket.io-client";
 import VueSocketIO from "vue-socket.io";
 import socketIO from "vue-socket.io";
+import "./assets/main.css";
 
 const vueSocketIO = new VueSocketIO({
   debug: true,
