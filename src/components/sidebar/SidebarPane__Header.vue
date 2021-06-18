@@ -4,24 +4,23 @@
       <template v-slot:toggler>
         <img src="../../assets/profilePic.png" />
       </template>
+
+      <template v-slot:dropdownContent>
+        <button @click="signOut">Sign out</button>
+      </template>
+    </DropdownBox>
+    <DropdownBox @isDropdownBoxVisible="isDropdownBoxVisible">
+      <template v-slot:toggler>
+        <img src="../../assets/addContact.png" />
+      </template>
     </DropdownBox>
     <!-- <button type="button">
       <img src="../../assets/profilePic.png" />
     </button> -->
     <!-- <button type="button"><img src="../../assets/addContact.png" /></button> -->
-    <!-- <button type="button" class="btn" @click="showModal">
+    <button type="button" class="btn" @click="showModal">
       <img src="../../assets/messageAdd.png" />
-    </button> -->
-    <DropdownBox @isDropdownBoxVisible="isDropdownBoxVisible">
-      <template v-slot:toggler>
-        <button type="button"><img src="../../assets/addContact.png" /></button>
-      </template>
-    </DropdownBox>
-    <DropdownBox @isDropdownBoxVisible="isDropdownBoxVisible">
-      <template v-slot:toggler>
-        <img src="../../assets/messageAdd.png" />
-      </template>
-    </DropdownBox>
+    </button>
     <Modal
       v-show="isModalVisible"
       @close="closeModal"
@@ -63,7 +62,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["createRoom"]),
+    ...mapActions(["createRoom", "signOut"]),
 
     showModal() {
       this.isModalVisible = true;
@@ -84,11 +83,11 @@ export default {
 <style>
 .sidebar-header {
   grid-area: sidebarHeader;
-  border: 1px solid black;
+  border: 1px solid #ededed;
   /* margin: 0px -10px 10px; */
   /* overflow: hidden; */
   /* height: 100%; */
-  background-color: lightgoldenrodyellow;
+  background-color: #ededed;
   padding: 0.2em 0.2em 0.2em;
   /* height: 2.5em; */
   display: flex;
