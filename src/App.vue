@@ -1,27 +1,30 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <router-view> </router-view>
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
 export default {
-  // name: "app",
-  //   // "the value stored in the data property is a function"
-  //   data() {
-  //     return {
-  //       msg: "This is 'msg' in the data obj"
-  //     };
-  //   }
+  methods: {
+    ...mapActions(["setUserCredentialsInStore"])
+  },
+  created() {
+    // When the app loads, or each time it reloads: check if the user has login credentials stored in cookies. If so, save these to the store
+    this.setUserCredentialsInStore();
+  }
 };
 </script>
 <style>
-body,
+/* body,
 html {
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  display: flex;
 }
 * {
   box-sizing: border-box;
-}
+} */
 </style>
