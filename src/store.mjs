@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
 import { io } from "socket.io-client";
+import router from "./router.mjs";
 
 // initialise a socket
 export const socket = io("http://localhost:3004");
@@ -26,11 +27,10 @@ export default new Vuex.Store({
       allRooms: [],
       selectedRoom: null,
       chatContents: null,
-      // temporarily static until authentication is complete
       sessionDetails: {
-        username: "jeremylim_91",
-        name: "jeremy",
-        sessionId: "testSession"
+        // username: ,
+        // name: ,
+        // userId:,
       }
     };
   },
@@ -56,11 +56,36 @@ export default new Vuex.Store({
     //   state.chatContents.push(data);
     // },
     SOCKET_receiveNewMsg(state, data) {
-      console.log(`state.chatContents is;`);
-      console.log(state.chatContents);
-      console.log("new message data is:");
-      console.log(data);
       state.chatContents.push(data);
+    },
+    signIn(state, data) {
+      // destructure data
+      const { username, _id, name } = data.user;
+      state.sessionDetails.username = username;
+      state.sessionDetails.name = name;
+      state.sessionDetails.userId = _id;
+      router.push("/");
+    },
+    setUserCredentialsInStore(state, data) {
+      console.log(`data in setUserCredentialsInStore`);
+      console.log(data);
+
+      // set the credentials in the state
+      const { loggedInUserId, loggedInName, loggedInUsername } = data;
+      state.sessionDetails.username = loggedInUsername;
+      state.sessionDetails.name = loggedInName;
+      state.sessionDetails.userId = loggedInUserId;
+      console.log(`router full path is:`);
+      console.log(router.currentRoute.fullPath);
+      // If the user is not on the main page, direct him to the main page (but why?)
+    },
+
+    signOut(state, data) {
+      console.log("commencing sign out");
+      // remove user's details from the store
+      state.sessionDetails = {};
+      // bring user to login page
+      router.push("/login");
     }
   },
   // place all async code here
@@ -69,9 +94,14 @@ export default new Vuex.Store({
     fetchUserChatHistory(context, payload) {
       Axios.get("/messages/allMsgsByRoom")
         .then(({ data }) => {
+          console.log(`data is:`);
+          console.log(data);
           context.commit("fetchUserChatHistory", data);
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          console.log("There was an error!:");
+          console.log(error);
+        });
     },
     // used in SidebarPane__chats to display a all the rooms in a list
     updateSelectedRoom(context, payload) {
@@ -80,9 +110,21 @@ export default new Vuex.Store({
     fetchAllRooms(context, payload) {
       Axios.get("/rooms/index")
         .then(({ data }) => {
+          console.log(`data is:`);
+          console.log(data);
           context.commit("fetchAllRooms", data);
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          // Handle scenario where error is caused by failure to authenticate user credentials from his cookies
+
+          if (
+            error.response.data === "unauthenticated" &&
+            router.currentRoute.fullPath !== "/login"
+          ) {
+            // if the error says 'unauthenticated AND the user is not at login page, bring the user to the login page
+            router.push("/login");
+          }
+        });
     },
 
     // used in ChatPane__Chat to get contents of all the chats for a given room
@@ -91,6 +133,7 @@ export default new Vuex.Store({
       const roomObjectId = context.state.selectedRoom.id;
       Axios.get(`/messages/getAllMsgsInRoom/${roomObjectId}`)
         .then(({ data }) => {
+          console.log(`data is:`);
           console.log(data);
           context.commit("fetchChatContents", data);
         })
@@ -115,6 +158,54 @@ export default new Vuex.Store({
     SOCKET_receiveNewMsg(context, msg) {
       console.log(`msg received in client:`);
       console.log(msg);
+    },
+    signIn(context, payload) {
+      // make a req to the db to verify credentials. use a post request because the data is sensitive
+      Axios.post("/users/signIn", payload)
+        .then(({ data }) => {
+          context.commit("signIn", data);
+        })
+        .catch(error => console.log(error));
+    },
+    setUserCredentialsInStore(context, payload) {
+      // make a req to db to verify credentials using the cookies supplied.
+      Axios.post("/users/setUserCredentialsInStore", payload)
+        .then(({ data }) => {
+          console.log(`check credentials data is: `);
+          console.log(data);
+          context.commit("setUserCredentialsInStore", data);
+        })
+        .catch(error => console.log(error));
+    },
+    // create a new room upon user's request
+    createRoom(context, payload) {
+      // console.log(context.state.sessionDetails);
+      // add the userId into the payload
+      payload.userId = context.state.sessionDetails.userId;
+      console.log(`payload.userId is:`);
+      console.log(payload.userId);
+      socket.emit("createRoom", payload);
+
+      //   Axios.post("/rooms/create", payload)
+      //     .then(({ data }) => {
+      //       context.commit("createRoom", data);
+      //     })
+      //     .catch(error => console.log(error));
+    },
+    SOCKET_updateRoomsList(context, rooms) {
+      // query db for all the rooms
+      context.dispatch("fetchAllRooms");
+
+      console.log(rooms);
+    },
+    signOut(context, payload) {
+      console.log("commencing signOut1");
+      // make a BE query that responds by remove all user's cookies that are relevant to auth
+      Axios.get("/users/signOut")
+        .then(({ data }) => {
+          context.commit("signOut");
+        })
+        .catch(err => console.log(err));
     }
   },
   getters: {
@@ -130,6 +221,12 @@ export default new Vuex.Store({
     },
     getSessionDetails(state, otherGetters) {
       return state.sessionDetails;
+    },
+    getRoomName(state, otherGetters) {
+      if (!state.selectedRoom) {
+        return "Chat name";
+      }
+      return state.selectedRoom.name.toUpperCase();
     }
   }
 });
