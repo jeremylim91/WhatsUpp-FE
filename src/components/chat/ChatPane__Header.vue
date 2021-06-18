@@ -1,27 +1,30 @@
 <template>
   <div class="header">
-    <div>{{ name }}</div>
+    <div>{{ getRoomName }}</div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
-  data() {
-    return {
-      name: "chat name"
-    };
+  computed: {
+    ...mapGetters({
+      getRoomName: "getRoomName"
+    })
   }
 };
 </script>
 <style scoped>
 .header {
-  border: 1px solid black;
-  margin: 0px -10px 10px;
+  grid-area: chatHeader;
+  border: 1px solid #ededed;
+  /* margin: 0px -10px 10px; */
   overflow: hidden;
-  background-color: lightgoldenrodyellow;
+  background-color: #ededed;
   padding: 0.2em 1em 0.2em;
-  height: 2.5em;
+  /* height: 2.5em; */
   display: flex;
   align-items: center;
+  font-weight: 700;
 }
 </style>

@@ -1,13 +1,11 @@
 <template>
   <div class="container">
     <div
-      v-for="message in chatContents"
       class="message-field"
+      v-for="message in chatContents"
       :class="alignMsgs(message)"
       :key="message.id"
     >
-      <!-- :class="{ myMsg: message.username === sessionDetails.username }" -->
-      <!-- <div class="test1"> -->
       <span class="username-field">{{ message.username }}</span>
       <span class="message-box">
         <div>{{ message.message }}</div>
@@ -21,7 +19,8 @@
 <script>
 import moment from "moment";
 import { mapGetters } from "vuex";
-import { io } from "socket.io-client";
+import { getUsernameFromCookie } from "../../utils.mjs";
+// import { getUsernameFromCookie } from "../utils.mjs";
 
 export default {
   data() {
@@ -64,13 +63,17 @@ export default {
 </script>
 <style scoped>
 .container {
+  grid-area: chatArea;
   display: flex;
   flex-direction: column;
+  overflow: scroll;
+  padding: 30px 0px 30px;
+  background-image: url("../../assets/whatsupp-background.png");
 }
 .message-field {
   display: flex;
   flex-direction: column;
-  margin: 0.5em 0em 0.5em;
+  margin: 0.5em 1em 0.5em;
   font-weight: 600;
   font-size: 0.6rem;
 }
@@ -84,13 +87,16 @@ export default {
   font-weight: 500;
   font-size: 1rem;
   flex-direction: column;
-  background-color: lightgrey;
+  background-color: #ffffff;
   border-radius: 15px;
   padding: 0.2em 0.5em 0.2em;
   max-width: 15em;
 }
 .myMsg {
   align-self: flex-end;
+}
+.myMsg .message-box {
+  background-color: #dbf8c6;
 }
 .timestamp {
   font-size: 0.6rem;

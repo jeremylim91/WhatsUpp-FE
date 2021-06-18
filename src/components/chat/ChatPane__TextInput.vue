@@ -5,6 +5,7 @@
       class="input-box"
       v-model="textInput"
       @keyup.enter="emitInputToDb"
+      placeholder="Type a message"
     />
   </div>
 </template>
@@ -30,15 +31,17 @@ export default {
 </script>
 <style scoped>
 .text-input-container {
-  position: absolute;
-  bottom: 0px;
-  height: 3em;
-  background-color: lightsalmon;
+  /* position: fixed; */
+  /* bottom: 0px; */
+  /* height: 3em; */
   width: 100%;
-  margin: 0px -10px 0px;
+  grid-area: textInputArea;
+  background-color: #f0f0f0;
+  /* margin: 0px -10px 0px; */
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 3em;
 }
 .input-box {
   font-size: 1em;
@@ -47,5 +50,6 @@ export default {
   border-radius: 50px;
   padding: 0px 0.5em 0px;
   outline: none;
+  border: 1px solid #f0f0f0;
 }
 </style>
