@@ -14,6 +14,8 @@ const routes = [
 
 // create a VueRouter Instance and use the above info to tell app to route the accordingly
 export default new VueRouter({
+  // mode:history uses vueRouter's in-built methods to handle the back button clicks
+  mode: "history",
   // the value (i.e. 'routes) referse to the routes constant defined above
   routes: routes
 });
