@@ -3,11 +3,44 @@ import Vuex from "vuex";
 import axios from "axios";
 import { io } from "socket.io-client";
 import router from "./router.mjs";
+import SockJS from "sockjs-client";
+// import Stomp from "@stomp/stompjs"
+import { Client, Message } from '@stomp/stompjs';
 
+
+// https://stomp-js.github.io/guide/stompjs/using-stompjs-v5.html#include-stompjs
+
+const client= new Client()
+client.brokerURL= "ws://localhost:3005/chat"
 // initialise a socket
-export const socket = io("http://localhost:3005");
+// export const socket = io("http://localhost:3005");
 
-socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
+export const socket= new SockJS('http://localhost:3005/chat')
+// socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
+// const stompClient = Stomp.over(socket);
+
+
+// stompClient.connect(
+//   {},
+//   frame => {
+//     console.log("Attempting web socket connection")
+//     this.connected = true;
+//     console.log(frame);
+//     this.stompClient.subscribe("/topic/greetings", tick => {
+//       console.log(tick);
+//       const roomsList= tick.body;
+//       console.log(`roomsList is:`)
+//       console.log(roomsList)
+//       this.received_messages.push(JSON.parse(tick.body).content);
+  
+//     });
+//   },
+//   error=>{
+//     console.log(error);
+//     this.disconnected= false;
+//   }
+// )
+    
 
 // Configs for axios
 const BACKEND_URL = "http://localhost:3005";
@@ -199,11 +232,39 @@ export default new Vuex.Store({
       //     })
       //     .catch(error => console.log(error));
     },
+    // query db for all the rooms
+    
     SOCKET_updateRoomsList(context, rooms) {
-      // query db for all the rooms
       context.dispatch("fetchAllRooms");
-
+      
       console.log(rooms);
+    },
+    
+    updateRoomList(context, rooms){
+      // Query db for the rooms
+      this.socket= new SockJS('http://localhost:3005/chat')
+      this.stompClient = Stomp.over(this.socket);
+      this.stompClient.connect(
+        {},
+        frame => {
+          this.connected = true;
+          console.log(frame);
+          this.stompClient.subscribe("/topic/greetings", tick => {
+            console.log(tick);
+            const roomsList= tick.body;
+            console.log(`roomsList is:`)
+            console.log(roomsList)
+            this.received_messages.push(JSON.parse(tick.body).content);
+        
+          });
+        },
+        error=>{
+          console.log(error);
+          this.disconnected= false;
+        }
+      )
+          
+       
     },
     signOut(context, payload) {
       console.log("commencing signOut1");
