@@ -6,10 +6,10 @@
         type="button"
         @click="updateSelectedRoom($event, room)"
       >
-        <div><img :src="room.image" alt="avatar" /></div>
-        <div>
+        <div class=chat-img-container><img :src="room.image" alt="avatar" /></div>
+        <div class="chat-details-container">
           <div class="name">{{ room.name }}</div>
-          <div class="latestmsg">{{ room.lastMsg }}</div>
+          <div class="latest-msg">{{ room.lastMsg }}</div>
         </div>
       </button>
     </div>
@@ -43,26 +43,38 @@ export default {
 };
 </script>
 <style scoped>
+.container{
+width: 100%;
+
+}
 .chat-summary {
   width: 100%;
   margin: 0.5em 0.2em 0.5em;
-  overflow: scroll;
-
   /* override original button styles */
   border: none;
   border-bottom: 0.2em solid lightgrey;
   text-align: left;
   display: flex;
 }
-.chat-summary .name {
+
+.name {
   font-weight: 600;
   margin: 5px;
 }
-.chat-summary .latestMsg {
-  font-size: 0.6em;
-  width: 100%;
+.latest-msg {
+  font-size: 0.8em;
   margin: 5px;
-  /* max-height: 1em; */
   text-overflow: ellipsis;
+}
+
+.latest-msg {
+white-space: nowrap;
+text-overflow: ellipsis;
+overflow: hidden;
+}
+
+.chat-details-container{
+  width: 100%;
+  overflow: hidden;
 }
 </style>

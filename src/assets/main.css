@@ -7,6 +7,13 @@ html,
   /* overflow: hidden; */
   /* display: flex; */
 }
+
+/* Code for visualising css layouts */
+/* html * {
+  background: rgba(255, 0, 0, .1);
+  box-shadow: 0 0 0 1px red;
+} */
+
 * {
   box-sizing: border-box;
 }
@@ -16,7 +23,7 @@ html,
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 0.3fr 1fr;
+  grid-template-columns: 15em 1fr;
   grid-template-rows: 0.1fr 1fr;
   grid-template-areas: "sidebarHeader chatHeader" "sidebar chat";
   background: #d7dbd5;

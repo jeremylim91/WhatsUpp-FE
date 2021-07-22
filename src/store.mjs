@@ -5,12 +5,12 @@ import { io } from "socket.io-client";
 import router from "./router.mjs";
 
 // initialise a socket
-export const socket = io("http://localhost:3004");
+export const socket = io("http://localhost:3005");
 
 socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
 
 // Configs for axios
-const BACKEND_URL = "http://localhost:3004";
+const BACKEND_URL = "http://localhost:3005";
 
 const Axios = axios.create({
   withCredentials: true,
@@ -105,6 +105,8 @@ export default new Vuex.Store({
     },
     // used in SidebarPane__chats to display a all the rooms in a list
     updateSelectedRoom(context, payload) {
+      console.log("payload in update selected room is:")
+      console.log(payload)
       context.commit("updateSelectedRoom", payload);
     },
     fetchAllRooms(context, payload) {
@@ -130,9 +132,14 @@ export default new Vuex.Store({
     // used in ChatPane__Chat to get contents of all the chats for a given room
     fetchChatContents(context, payload) {
       // const roomObjectId = payload._id;
+      console.log(context.state.selectedRoom)
       const roomObjectId = context.state.selectedRoom.id;
-      Axios.get(`/messages/getAllMsgsInRoom/${roomObjectId}`)
+      console.log("roomObjectId is:")
+      console.log(roomObjectId)
+      // Axios.get(`/messages/getAllMsgsInRoom/${roomObjectId}`)
+      Axios.get(`/messages/getAllMsgsInRoom/?roomId=${roomObjectId}`)
         .then(({ data }) => {
+          console.log("getAllMsgs worked!!!")
           console.log(`data is:`);
           console.log(data);
           context.commit("fetchChatContents", data);
