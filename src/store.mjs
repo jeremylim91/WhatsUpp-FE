@@ -10,14 +10,35 @@ import { Client, Message } from '@stomp/stompjs';
 
 // https://stomp-js.github.io/guide/stompjs/using-stompjs-v5.html#include-stompjs
 
-const client= new Client()
-client.brokerURL= "ws://localhost:3005/chat"
+const client= new Client({
+  brokerURL: 'ws://localhost:3005/chat',
+  debug: function (str) {
+    console.log(str);
+  },
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000,
+})
+
+
+client.onStompError = function (frame) {
+  // Will be invoked in case of error encountered at Broker
+  // Bad login/passcode typically will cause an error
+  // Complaint brokers will set `message` header with a brief message. Body may contain details.
+  // Compliant brokers will terminate the connection after any error
+  console.log('Broker reported error: ' + frame.headers['message']);
+  console.log('Additional details: ' + frame.body);
+};
+
+client.deactivate();
+client.activate();
+
 // initialise a socket
 // export const socket = io("http://localhost:3005");
 
 export const socket= new SockJS('http://localhost:3005/chat')
 // socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
-// const stompClient = Stomp.over(socket);
+// const stompClient = Stomp.over(socket); 
 
 
 // stompClient.connect(
@@ -53,7 +74,7 @@ const Axios = axios.create({
 // Tell app to always use Vuex
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+const storeContent= new Vuex.Store({
   state() {
     return {
       chatData: {},
@@ -83,11 +104,11 @@ export default new Vuex.Store({
       console.log(data);
       state.allRooms = [...data];
     },
-    // addMsgToRoom(state, data) {
-    //   console.log(`msg data is:`);
-    //   console.log(data);
-    //   state.chatContents.push(data);
-    // },
+    addMsgToRoom(state, data) {
+      console.log(`msg data is:`);
+      console.log(data);
+      state.chatContents.push(data);
+    },
     SOCKET_receiveNewMsg(state, data) {
       state.chatContents.push(data);
     },
@@ -183,12 +204,18 @@ export default new Vuex.Store({
     },
 
     emitInputToDb(context, payload) {
+     
       // emit the msg to the server, sending the msg and the roomId
       const { msgContent } = payload;
       const { id: roomId } = context.state.selectedRoom;
       const { username } = context.state.sessionDetails;
       console.log("emmitting to server...");
-      socket.emit("addMsgToDb", { msgContent, roomId, username });
+      client.publish({
+        destination: "/wsToServer/addMsgToDb",
+        body: JSON.stringify({msgContent, roomId,username})
+
+      })
+      // socket.emit("addMsgToDb", { msgContent, roomId, username });
     },
     addMsgToRoom(context, payload) {
       console.log(`payload in store is:`);
@@ -225,6 +252,9 @@ export default new Vuex.Store({
       console.log(`payload.userId is:`);
       console.log(payload.userId);
       socket.emit("createRoom", payload);
+      socket.publish({
+        destination: "/chat/wsToServer/createRoom",
+        body: JSON.stringify(payload)})
 
       //   Axios.post("/rooms/create", payload)
       //     .then(({ data }) => {
@@ -234,7 +264,10 @@ export default new Vuex.Store({
     },
     // query db for all the rooms
     
-    SOCKET_updateRoomsList(context, rooms) {
+    updateRoomsList(context, rooms) {
+      console.log("inside udpateRoomsList in Store")
+      console.log(rooms)
+
       context.dispatch("fetchAllRooms");
       
       console.log(rooms);
@@ -299,19 +332,34 @@ export default new Vuex.Store({
   }
 });
 
-// export default storeContent;
+export default storeContent;
+
+client.onConnect = function (frame) {
+  // Do something, all subscribes must be done is this callback
+  // This is needed because this will be executed after a (re)connect
+
+  client.subscribe('/wsFromServer/testingRoute', (message)=>{
+    const msgData= JSON.parse(message.body)
+    // console.log("message.body is:")
+    // console.log(message.body)
+    storeContent.dispatch('addMsgToRoom', msgData)
+  
+  })
+};
+
+
 
 /*////////////////////////////////////////////////
-       Manage all sockets
+       Manage all sockets 
 ////////////////////////////////////////////////*/
 // receive the msg from the server
-socket.on("receiveNewMsg", msg => {
-  console.log(`msg received in client:`);
-  console.log(msg);
-  store.commit("addMsgToRoom", msg);
-});
+// socket.on("receiveNewMsg", msg => {
+//   console.log(`msg received in client:`);
+//   console.log(msg);
+//   store.commit("addMsgToRoom", msg);
+// });
 
-socket.on("testFromServer", payload => {
-  console.log(`payload is:`);
-  console.log(payload);
-});
+// socket.on("testFromServer", payload => {
+//   console.log(`payload is:`);
+//   console.log(payload);
+// });
