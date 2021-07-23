@@ -1,24 +1,43 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 import router from "./router.mjs";
-import SockJS from "sockjs-client";
+// import SockJS from "sockjs-client";
 // import Stomp from "@stomp/stompjs"
-import { Client, Message } from '@stomp/stompjs';
+import { Client, Message } from "@stomp/stompjs";
 
+const client = new Client({
+  brokerURL: "ws://localhost:3005/chat",
+  debug: function(str) {
+    console.log(str);
+  },
+  reconnectDelay: 5000,
+  heartbeatIncoming: 4000,
+  heartbeatOutgoing: 4000
+});
+
+client.onStompError = function(frame) {
+  // Will be invoked in case of error encountered at Broker
+  // Bad login/passcode typically will cause an error
+  // Complaint brokers will set `message` header with a brief message. Body may contain details.
+  // Compliant brokers will terminate the connection after any error
+  console.log("Broker reported error: " + frame.headers["message"]);
+  console.log("Additional details: " + frame.body);
+};
+client.deactivate();
+client.activate();
+// const stompClient = null;
+// const socket = new SockJS("http://localhost:3005/chat");
+// stompClient=
 
 // https://stomp-js.github.io/guide/stompjs/using-stompjs-v5.html#include-stompjs
 
-const client= new Client()
-client.brokerURL= "ws://localhost:3005/chat"
 // initialise a socket
 // export const socket = io("http://localhost:3005");
 
-export const socket= new SockJS('http://localhost:3005/chat')
 // socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
 // const stompClient = Stomp.over(socket);
-
 
 // stompClient.connect(
 //   {},
@@ -32,7 +51,7 @@ export const socket= new SockJS('http://localhost:3005/chat')
 //       console.log(`roomsList is:`)
 //       console.log(roomsList)
 //       this.received_messages.push(JSON.parse(tick.body).content);
-  
+
 //     });
 //   },
 //   error=>{
@@ -40,7 +59,6 @@ export const socket= new SockJS('http://localhost:3005/chat')
 //     this.disconnected= false;
 //   }
 // )
-    
 
 // Configs for axios
 const BACKEND_URL = "http://localhost:3005";
@@ -53,7 +71,7 @@ const Axios = axios.create({
 // Tell app to always use Vuex
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+const storage = new Vuex.Store({
   state() {
     return {
       chatData: {},
@@ -97,6 +115,7 @@ export default new Vuex.Store({
       state.sessionDetails.username = username;
       state.sessionDetails.name = name;
       state.sessionDetails.userId = _id;
+      client.activate();
       router.push("/");
     },
     setUserCredentialsInStore(state, data) {
@@ -117,6 +136,9 @@ export default new Vuex.Store({
       console.log("commencing sign out");
       // remove user's details from the store
       state.sessionDetails = {};
+      // Deactivate the socket
+      client.deactivate();
+
       // bring user to login page
       router.push("/login");
     }
@@ -138,8 +160,8 @@ export default new Vuex.Store({
     },
     // used in SidebarPane__chats to display a all the rooms in a list
     updateSelectedRoom(context, payload) {
-      console.log("payload in update selected room is:")
-      console.log(payload)
+      console.log("payload in update selected room is:");
+      console.log(payload);
       context.commit("updateSelectedRoom", payload);
     },
     fetchAllRooms(context, payload) {
@@ -165,14 +187,14 @@ export default new Vuex.Store({
     // used in ChatPane__Chat to get contents of all the chats for a given room
     fetchChatContents(context, payload) {
       // const roomObjectId = payload._id;
-      console.log(context.state.selectedRoom)
+      console.log(context.state.selectedRoom);
       const roomObjectId = context.state.selectedRoom.id;
-      console.log("roomObjectId is:")
-      console.log(roomObjectId)
+      console.log("roomObjectId is:");
+      console.log(roomObjectId);
       // Axios.get(`/messages/getAllMsgsInRoom/${roomObjectId}`)
       Axios.get(`/messages/getAllMsgsInRoom/?roomId=${roomObjectId}`)
         .then(({ data }) => {
-          console.log("getAllMsgs worked!!!")
+          console.log("getAllMsgs worked!!!");
           console.log(`data is:`);
           console.log(data);
           context.commit("fetchChatContents", data);
@@ -188,7 +210,11 @@ export default new Vuex.Store({
       const { id: roomId } = context.state.selectedRoom;
       const { username } = context.state.sessionDetails;
       console.log("emmitting to server...");
-      socket.emit("addMsgToDb", { msgContent, roomId, username });
+      client.publish({
+        destination: "/wsToServer/addMsgToDb",
+        body: JSON.stringify({ msgContent, roomId, username })
+      });
+      // socket.emit("addMsgToDb", { msgContent, roomId, username });
     },
     addMsgToRoom(context, payload) {
       console.log(`payload in store is:`);
@@ -199,6 +225,11 @@ export default new Vuex.Store({
       console.log(`msg received in client:`);
       console.log(msg);
     },
+    receiveNewMsg(context, data) {
+      console.log(`msg received in client:`);
+      console.log(data);
+    },
+
     signIn(context, payload) {
       // make a req to the db to verify credentials. use a post request because the data is sensitive
       Axios.post("/users/signIn", payload)
@@ -233,38 +264,37 @@ export default new Vuex.Store({
       //     .catch(error => console.log(error));
     },
     // query db for all the rooms
-    
+
     SOCKET_updateRoomsList(context, rooms) {
       context.dispatch("fetchAllRooms");
-      
+
       console.log(rooms);
     },
-    
-    updateRoomList(context, rooms){
+
+    updateRoomList(context, rooms) {
+      console.log("inside updateRoomList");
+      // client.publish({});
       // Query db for the rooms
-      this.socket= new SockJS('http://localhost:3005/chat')
-      this.stompClient = Stomp.over(this.socket);
-      this.stompClient.connect(
-        {},
-        frame => {
-          this.connected = true;
-          console.log(frame);
-          this.stompClient.subscribe("/topic/greetings", tick => {
-            console.log(tick);
-            const roomsList= tick.body;
-            console.log(`roomsList is:`)
-            console.log(roomsList)
-            this.received_messages.push(JSON.parse(tick.body).content);
-        
-          });
-        },
-        error=>{
-          console.log(error);
-          this.disconnected= false;
-        }
-      )
-          
-       
+      // this.socket = new SockJS("http://localhost:3005/chat");
+      // this.stompClient = Stomp.over(this.socket);
+      // this.stompClient.connect(
+      //   {},
+      //   frame => {
+      //     this.connected = true;
+      //     console.log(frame);
+      //     this.stompClient.subscribe("/topic/greetings", tick => {
+      //       console.log(tick);
+      //       const roomsList = tick.body;
+      //       console.log(`roomsList is:`);
+      //       console.log(roomsList);
+      //       this.received_messages.push(JSON.parse(tick.body).content);
+      //     });
+      //   },
+      //   error => {
+      //     console.log(error);
+      //     this.disconnected = false;
+      //   }
+      // );
     },
     signOut(context, payload) {
       console.log("commencing signOut1");
@@ -299,19 +329,37 @@ export default new Vuex.Store({
   }
 });
 
+// const testCallBack = msg => {
+//   storage.dispatch("fetchAllRooms");
+// };
+
+client.onConnect = function(frame) {
+  console.log("WS handshake successful!");
+  // Do something, all subscribes must be done is this callback
+  // This is needed because this will be executed after a (re)connect
+  client.subscribe("/wsFromServer/testingRoute", () =>
+    storage.dispatch("fetchAllRooms")
+  );
+  client.subscribe("/wsFromServer/receiveNewMsg", () =>
+    storage.dispatch("receiveNewMsg")
+  );
+  // client.subscribe("/topic/testingRoute", testCallBack);
+};
+
+export default storage;
 // export default storeContent;
 
 /*////////////////////////////////////////////////
        Manage all sockets
 ////////////////////////////////////////////////*/
 // receive the msg from the server
-socket.on("receiveNewMsg", msg => {
-  console.log(`msg received in client:`);
-  console.log(msg);
-  store.commit("addMsgToRoom", msg);
-});
+// socket.on("receiveNewMsg", msg => {
+//   console.log(`msg received in client:`);
+//   console.log(msg);
+//   store.commit("addMsgToRoom", msg);
+// });
 
-socket.on("testFromServer", payload => {
-  console.log(`payload is:`);
-  console.log(payload);
-});
+// socket.on("testFromServer", payload => {
+//   console.log(`payload is:`);
+//   console.log(payload);
+// });

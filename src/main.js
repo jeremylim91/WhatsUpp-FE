@@ -1,7 +1,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import Vuex from "vuex";
-import store, { socket } from "./store.mjs";
+import store /*, { socket }*/ from "./store.mjs";
 import router from "./router.mjs";
 // import { io } from "socket.io-client";
 import VueSocketIO from "vue-socket.io";
@@ -35,7 +35,7 @@ import "./assets/main.css";
 // initialise a socket
 // export const socketInstance = io("http://localhost:3004");
 // Vue.use(socketIO, "http://localhost:3004");
-Vue.use( socket, store);
+Vue.use(/*socket,*/ store);
 
 new Vue({
   el: "#app",
