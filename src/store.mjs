@@ -172,7 +172,8 @@ const storeContent= new Vuex.Store({
         })
         .catch(error => {
           // Handle scenario where error is caused by failure to authenticate user credentials from his cookies
-
+          console.log("error.response.data is:")
+          console.log(error.response.data)
           if (
             error.response.data === "unauthenticated" &&
             router.currentRoute.fullPath !== "/login"
