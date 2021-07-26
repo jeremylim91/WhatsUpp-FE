@@ -71,7 +71,7 @@ const Axios = axios.create({
 // Tell app to always use Vuex
 Vue.use(Vuex);
 
-const storage = new Vuex.Store({
+const storeContent = new Vuex.Store({
   state() {
     return {
       chatData: {},
@@ -97,18 +97,29 @@ const storage = new Vuex.Store({
       state.chatContents = data;
     },
     fetchAllRooms(state, data) {
-      console.log(`data in mutations`);
+      console.log(`all rooms data:`);
       console.log(data);
       state.allRooms = [...data];
+      console.log("state.allRooms is:");
+      console.log(state.allRooms);
     },
-    // addMsgToRoom(state, data) {
-    //   console.log(`msg data is:`);
-    //   console.log(data);
+    addMsgToRoom(state, data) {
+      console.log(`msg data is:`);
+      console.log(data);
+      console.log(`state.chatContents is:`);
+      console.log(state.chatContents);
+      console.log(`state is`);
+      console.log(state);
+      if (state.chatContents === null) {
+        state.chatContents = [data];
+      } else {
+        state.chatContents.push(data);
+      }
+    },
+
+    // SOCKET_receiveNewMsg(state, data) {
     //   state.chatContents.push(data);
     // },
-    SOCKET_receiveNewMsg(state, data) {
-      state.chatContents.push(data);
-    },
     signIn(state, data) {
       // destructure data
       const { username, _id, name } = data.user;
@@ -221,10 +232,10 @@ const storage = new Vuex.Store({
       console.log(payload);
       context.commit("addMsgToRoom", payload);
     },
-    SOCKET_receiveNewMsg(context, msg) {
-      console.log(`msg received in client:`);
-      console.log(msg);
-    },
+    // SOCKET_receiveNewMsg(context, msg) {
+    //   console.log(`msg received in client:`);
+    //   console.log(msg);
+    // },
     receiveNewMsg(context, data) {
       console.log(`msg received in client:`);
       console.log(data);
@@ -255,7 +266,11 @@ const storage = new Vuex.Store({
       payload.userId = context.state.sessionDetails.userId;
       console.log(`payload.userId is:`);
       console.log(payload.userId);
-      socket.emit("createRoom", payload);
+      // socket.emit("createRoom", payload);
+      client.publish({
+        destination: "/wsToServer/createRoom",
+        body: JSON.stringify(payload)
+      });
 
       //   Axios.post("/rooms/create", payload)
       //     .then(({ data }) => {
@@ -265,11 +280,11 @@ const storage = new Vuex.Store({
     },
     // query db for all the rooms
 
-    SOCKET_updateRoomsList(context, rooms) {
-      context.dispatch("fetchAllRooms");
+    // SOCKET_updateRoomsList(context, rooms) {
+    //   context.dispatch("fetchAllRooms");
 
-      console.log(rooms);
-    },
+    //   console.log(rooms);
+    // },
 
     updateRoomList(context, rooms) {
       console.log("inside updateRoomList");
@@ -314,7 +329,8 @@ const storage = new Vuex.Store({
       return state.allRooms;
     },
     getChatContents(state, otherGetters) {
-      console.log("getting chat contents");
+      console.log("getting chat contents:");
+      console.log(state.chatContents);
       return state.chatContents;
     },
     getSessionDetails(state, otherGetters) {
@@ -329,24 +345,29 @@ const storage = new Vuex.Store({
   }
 });
 
-// const testCallBack = msg => {
-//   storage.dispatch("fetchAllRooms");
-// };
-
 client.onConnect = function(frame) {
   console.log("WS handshake successful!");
   // Do something, all subscribes must be done is this callback
   // This is needed because this will be executed after a (re)connect
   client.subscribe("/wsFromServer/testingRoute", () =>
-    storage.dispatch("fetchAllRooms")
+    storeContent.dispatch("fetchAllRooms")
   );
   client.subscribe("/wsFromServer/receiveNewMsg", () =>
-    storage.dispatch("receiveNewMsg")
+    storeContent.dispatch("receiveNewMsg")
   );
+
+  client.subscribe("/wsFromServer/createRoom", message => {
+    console.log(message.body);
+    storeContent.dispatch("fetchAllRooms");
+  });
+  client.subscribe("/wsFromServer/addMsgToDb", message => {
+    const msgData = JSON.parse(message.body);
+    storeContent.dispatch("addMsgToRoom", msgData);
+  });
   // client.subscribe("/topic/testingRoute", testCallBack);
 };
 
-export default storage;
+export default storeContent;
 // export default storeContent;
 
 /*////////////////////////////////////////////////
