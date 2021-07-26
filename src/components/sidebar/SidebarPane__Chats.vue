@@ -1,12 +1,14 @@
 <template>
   <div class="container">
-    <div v-for="room in allRooms" :key="room._id">
+    <div v-for="room in allRooms" :key="room.id">
       <button
         class="chat-summary"
         type="button"
         @click="updateSelectedRoom($event, room)"
       >
-        <div class=chat-img-container><img :src="room.image" alt="avatar" /></div>
+        <div class="chat-img-container">
+          <img :src="room.image" alt="avatar" />
+        </div>
         <div class="chat-details-container">
           <div class="name">{{ room.name }}</div>
           <div class="latest-msg">{{ room.lastMsg }}</div>
@@ -43,9 +45,8 @@ export default {
 };
 </script>
 <style scoped>
-.container{
-width: 100%;
-
+.container {
+  width: 100%;
 }
 .chat-summary {
   width: 100%;
@@ -68,12 +69,12 @@ width: 100%;
 }
 
 .latest-msg {
-white-space: nowrap;
-text-overflow: ellipsis;
-overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-.chat-details-container{
+.chat-details-container {
   width: 100%;
   overflow: hidden;
 }
