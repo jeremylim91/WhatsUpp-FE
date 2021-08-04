@@ -5,7 +5,8 @@ import { io } from "socket.io-client";
 import router from "./router.mjs";
 
 // initialise a socket
-export const socket = io("http://localhost:3004");
+const options = { path: '/chat/' }; //Options object to pass into SocketIO
+export const socket = io("http://localhost:3004", options);
 
 socket.on("connect", () => console.log(`you connected with id: ${socket.id} `));
 
@@ -60,6 +61,7 @@ export default new Vuex.Store({
     },
     signIn(state, data) {
       // destructure data
+      console.log("signIn", { state, data })
       const { username, _id, name } = data.user;
       state.sessionDetails.username = username;
       state.sessionDetails.name = name;
